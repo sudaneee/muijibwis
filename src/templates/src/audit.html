@@ -1,0 +1,68 @@
+{% extends "src/index.html" %}
+{% block title %}Audit trail{% endblock %}
+{% block crumb %}Administration{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Audit trail</h1>
+    <p>Every login, change, delete, restore, upload and promotion{% if not sees_all %} in {{ my_section }}{% endif %}. Entries cannot be edited or removed.</p>
+  </div>
+</div>
+
+<form method="GET" class="panel">
+  <div class="panel-body">
+    <div class="form-row">
+      <div class="form-group col-md-2"><label>User</label><input class="form-control" name="user" value="{{ filters.user }}"></div>
+      <div class="form-group col-md-2"><label>Action</label>
+        <select class="custom-select" name="action"><option value="">Any</option>
+          {% for value, label in actions %}<option value="{{ value }}" {% if filters.action == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select></div>
+      <div class="form-group col-md-2"><label>Record type</label>
+        <select class="custom-select" name="model"><option value="">Any</option>
+          {% for m in models %}<option {% if filters.model == m %}selected{% endif %}>{{ m }}</option>{% endfor %}
+        </select></div>
+      <div class="form-group col-md-2"><label>Record</label><input class="form-control" name="object" placeholder="name or id" value="{{ filters.object }}"></div>
+      <div class="form-group col-md-2"><label>From</label><input class="form-control" type="date" name="date_from" value="{{ filters.date_from }}"></div>
+      <div class="form-group col-md-2"><label>To</label><input class="form-control" type="date" name="date_to" value="{{ filters.date_to }}"></div>
+    </div>
+  </div>
+  <div class="panel-footer"><button class="btn btn-primary"><i class="fas fa-filter"></i>Filter</button><a href="{% url 'audit_log' %}" class="btn btn-light">Clear</a></div>
+</form>
+
+<div class="panel">
+  <div class="panel-header"><h2>Entries</h2><span class="hint">Page {{ page.number }} of {{ page.paginator.num_pages }} · {{ page.paginator.count }} entries · times in UTC</span></div>
+  <div class="table-wrap">
+    <table class="table table-app table-sm">
+      <thead><tr><th>When</th><th>User</th><th>Action</th><th>Record</th><th>Changes / details</th><th>IP</th></tr></thead>
+      <tbody>
+      {% for e in page %}
+        <tr>
+          <td class="text-nowrap">{{ e.timestamp|date:"Y-m-d H:i:s" }}</td>
+          <td>{{ e.username|default:"system" }}</td>
+          <td><span class="badge {% if e.action == 'delete' or e.action == 'bulk_delete' or e.action == 'purge' or e.action == 'login_failed' %}badge-soft-danger{% elif e.action == 'login' or e.action == 'logout' %}badge-soft-muted{% else %}badge-soft{% endif %}">{{ e.get_action_display }}</span></td>
+          <td>{{ e.model }}{% if e.object_id %} <span class="muted">#{{ e.object_id }}</span>{% endif %}<br><small class="muted">{{ e.object_repr }}</small></td>
+          <td style="font-size: 12.5px">
+            {% if e.action == 'update' or e.action == 'delete' or e.action == 'restore' %}
+              {% for field, pair in e.changes.items %}<div><code>{{ field }}</code> {{ pair.0|default_if_none:"—" }} → {{ pair.1|default_if_none:"—" }}</div>{% endfor %}
+            {% elif e.action == 'create' or e.action == 'purge' %}
+              <details><summary class="muted">{{ e.changes|length }} fields</summary>
+                {% for field, pair in e.changes.items %}<div><code>{{ field }}</code> {% if e.action == 'create' %}{{ pair.1|default_if_none:"—" }}{% else %}{{ pair.0|default_if_none:"—" }}{% endif %}</div>{% endfor %}
+              </details>
+            {% endif %}
+            {% if e.details.reason %}<div>Reason: {{ e.details.reason }}</div>{% endif %}
+            {% if e.details.note %}<div>Note: {{ e.details.note }}</div>{% endif %}
+          </td>
+          <td class="muted">{{ e.ip_address|default:"" }}</td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="6"><div class="empty-state"><i class="fas fa-search"></i>No entries match.</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="panel-footer">
+    {% if page.has_previous %}<a class="btn btn-sm btn-light" href="?{{ query }}&page={{ page.previous_page_number }}"><i class="fas fa-chevron-left"></i>Newer</a>{% endif %}
+    {% if page.has_next %}<a class="btn btn-sm btn-light" href="?{{ query }}&page={{ page.next_page_number }}">Older<i class="fas fa-chevron-right ml-2 mr-0"></i></a>{% endif %}
+  </div>
+</div>
+{% endblock %}

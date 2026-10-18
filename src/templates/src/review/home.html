@@ -1,0 +1,58 @@
+{% extends "src/index.html" %}
+{% load humanize %}
+{% block title %}Data review{% endblock %}
+{% block crumb %}Approval &amp; quality{% endblock %}
+{% block content %}
+{% include "src/review/_header.html" with active="home" %}
+
+<div class="stat-grid">
+  <a class="stat text-reset text-decoration-none" href="{% url 'review_duplicates' %}"><div class="icon {% if counts.duplicate_results %}red{% endif %}"><i class="fas fa-clone"></i></div><div><div class="value">{{ counts.duplicate_results }}</div><div class="label">Duplicate results</div></div></a>
+  <a class="stat text-reset text-decoration-none" href="{% url 'review_duplicates' %}#behaviour"><div class="icon {% if counts.duplicate_behaviour %}red{% endif %}"><i class="fas fa-copy"></i></div><div><div class="value">{{ counts.duplicate_behaviour }}</div><div class="label">Duplicate assessments</div></div></a>
+  <a class="stat text-reset text-decoration-none" href="{% url 'review_scores' %}"><div class="icon {% if counts.scores %}gold{% endif %}"><i class="fas fa-exclamation-triangle"></i></div><div><div class="value">{{ counts.scores }}</div><div class="label">Scores outside limits</div></div></a>
+  <a class="stat text-reset text-decoration-none" href="{% url 'review_behaviour' %}"><div class="icon {% if counts.behaviour %}gold{% endif %}"><i class="fas fa-clipboard-check"></i></div><div><div class="value">{{ counts.behaviour }}</div><div class="label">Bad behaviour scores</div></div></a>
+  <a class="stat text-reset text-decoration-none" href="{% url 'review_students' %}"><div class="icon {% if counts.duplicate_students %}blue{% endif %}"><i class="fas fa-user-friends"></i></div><div><div class="value">{{ counts.duplicate_students }}</div><div class="label">Students entered twice</div></div></a>
+  {% if sees_all %}<a class="stat text-reset text-decoration-none" href="{% url 'review_students' %}#no-class"><div class="icon blue"><i class="fas fa-user-slash"></i></div><div><div class="value">{{ counts.no_class }}</div><div class="label">Students without a class</div></div></a>{% endif %}
+</div>
+
+<div class="panel">
+  <div class="panel-header"><h2>Subject positions</h2><span class="hint">Score limits: 1st C.A 0–{{ limits.ca1 }}, 2nd C.A 0–{{ limits.ca2 }}, Exams 0–{{ limits.exams }}, behaviour 0–{{ limits.behaviour }}</span></div>
+  <div class="panel-body d-flex align-items-center justify-content-between flex-wrap" style="gap: 12px">
+    <div>{% if counts.positions %}<strong>{{ counts.positions|intcomma }}</strong> subject positions don't match the scores. Resolve duplicates and scores first, then recalculate.{% else %}<span class="ok-state"><i class="fas fa-check-circle"></i>All subject positions are correct.</span>{% endif %}</div>
+    {% if counts.positions %}
+    <form method="post" action="{% url 'review_positions' %}" onsubmit="return confirm('Recalculate {{ counts.positions }} subject positions? The old positions are kept and can be restored.');">
+      {% csrf_token %}<button class="btn btn-primary"><i class="fas fa-sync-alt"></i>Recalculate</button>
+    </form>{% endif %}
+  </div>
+</div>
+
+<div class="panel">
+  <div class="panel-header"><h2>Decisions</h2></div>
+  {% if decisions %}
+  <div class="table-wrap">
+    <table class="table table-app table-sm">
+      <thead><tr><th>When</th><th>By</th><th>What</th><th>Note</th><th></th></tr></thead>
+      <tbody>
+      {% for d in decisions %}
+        <tr {% if d.undone_at %}class="muted"{% endif %}>
+          <td class="text-nowrap">{{ d.decided_at|date:"Y-m-d H:i" }}</td>
+          <td>{{ d.decided_by.username|default:"system" }}</td>
+          <td>{% if d.undone_at %}<s>{{ d.summary }}</s>{% else %}{{ d.summary }}{% endif %}</td>
+          <td>{{ d.note }}</td>
+          <td class="text-right text-nowrap">
+            {% if d.undone_at %}<span class="badge badge-soft-muted">Undone by {{ d.undone_by.username }}</span>
+            {% elif d.kind != 'class_section' %}
+              <form method="post" action="{% url 'review_undo' d.id %}" class="d-inline" onsubmit="return confirm('Undo this decision?');">
+                {% csrf_token %}<button class="btn btn-sm btn-light"><i class="fas fa-undo"></i>Undo</button>
+              </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-clipboard-list"></i>No decisions yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

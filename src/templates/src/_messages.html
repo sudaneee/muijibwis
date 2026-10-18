@@ -1,0 +1,10 @@
+{% if messages %}
+<div class="messages">
+  {% for msg in messages %}
+  <div class="alert {% if msg.tags == 'error' %}alert-danger{% elif msg.tags == 'success' %}alert-success{% elif msg.tags == 'warning' %}alert-warning{% else %}alert-info{% endif %}" role="alert">
+    <i class="fas {% if msg.tags == 'error' %}fa-exclamation-circle{% elif msg.tags == 'success' %}fa-check-circle{% else %}fa-info-circle{% endif %}"></i>
+    <div>{{ msg.message }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}

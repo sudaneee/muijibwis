@@ -1,0 +1,27 @@
+{% extends "src/index.html" %}
+{% block title %}Upload assessments{% endblock %}
+{% block crumb %}Behaviour{% endblock %}
+{% block content %}
+{% url 'bhvxl-missed' as missed_url %}
+<div class="page-header">
+  <div>
+    {% if request.path == missed_url %}
+    <h1>Add missed assessments</h1>
+    <p>Upload assessments for students who were left out of the class's earlier upload.</p>
+    {% else %}
+    <h1>Upload assessments from Excel</h1>
+    <p>Upload the completed behavioural assessment sheet for one class. Each score must be from 0 to 5.</p>
+    {% endif %}
+  </div>
+  <div class="page-actions"><a href="{% url 'behav_sheet' %}" class="btn btn-light"><i class="fas fa-file-download"></i>Download assessment sheet</a></div>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="panel">
+  {% csrf_token %}
+  <div class="panel-body">
+    <div class="form-row">{% include "src/_f_session.html" %}{% include "src/_f_term.html" %}{% include "src/_f_class.html" %}</div>
+    {% include "src/_f_file.html" %}
+  </div>
+  <div class="panel-footer"><button name="form" type="submit" class="btn btn-primary"><i class="fas fa-upload"></i>Upload assessments</button></div>
+</form>
+{% endblock %}

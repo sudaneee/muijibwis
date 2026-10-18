@@ -1,0 +1,11 @@
+{% extends "src/index.html" %}
+{% block title %}Something was wrong with that request{% endblock %}
+{% block content %}
+<div class="panel mx-auto" style="max-width: 520px; margin-top: 24px">
+  <div class="panel-body text-center py-5">
+    <div class="stat mx-auto mb-3" style="width: 64px; height: 64px; padding: 0; justify-content: center; border: 0; box-shadow: none"><div class="icon gold" style="width: 64px; height: 64px; font-size: 24px"><i class="fas fa-exclamation"></i></div></div>
+    <h1 class="h4">Something was wrong with that request</h1>
+    <p class="muted">Please go back and try again. If it keeps happening, tell an administrator what you were doing.</p><a href="{% url 'home' %}" class="btn btn-primary mt-2">Back to the start</a>
+  </div>
+</div>
+{% endblock %}

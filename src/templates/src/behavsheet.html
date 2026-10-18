@@ -1,0 +1,16 @@
+{% extends "src/index.html" %}
+{% block title %}Assessment sheet{% endblock %}
+{% block crumb %}Students &amp; sheets{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Behavioural assessment sheet</h1>
+    <p>Download an Excel sheet listing a class's students, ready for the eight behavioural ratings.</p>
+  </div>
+</div>
+<form name="form1" method="POST" class="panel" style="max-width: 640px">
+  {% csrf_token %}
+  <div class="panel-body"><div class="form-row">{% include "src/_f_class.html" %}</div></div>
+  <div class="panel-footer"><button name="form1" type="submit" class="btn btn-primary"><i class="fas fa-file-download"></i>Download sheet</button></div>
+</form>
+{% endblock %}

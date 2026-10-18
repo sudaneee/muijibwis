@@ -1,0 +1,65 @@
+{% extends "src/index.html" %}
+{% load humanize %}
+{% block title %}Dashboard{% endblock %}
+{% block crumb %}Dashboard{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Assalamu alaikum, {% firstof user.first_name user.username %}</h1>
+    <p>{{ my_role }}{% if my_section %} · {{ my_section }}{% elif sees_all %} · All sections{% endif %}{% if latest_session %} · Latest results: {{ latest_session }}{% if latest_term %}, {{ latest_term }}{% endif %}{% endif %}</p>
+  </div>
+  <div class="page-actions">
+    <a href="{% url 'resultcreate' %}" class="btn btn-primary"><i class="fas fa-pen"></i>Enter results</a>
+    <a href="{% url 'result_view' %}" class="btn btn-light"><i class="fas fa-id-card"></i>Report cards</a>
+  </div>
+</div>
+
+<div class="stat-grid">
+  <div class="stat"><div class="icon"><i class="fas fa-user-graduate"></i></div>
+    <div><div class="value">{{ stats.students|intcomma }}</div><div class="label">Active students</div></div></div>
+  <div class="stat"><div class="icon blue"><i class="fas fa-chalkboard"></i></div>
+    <div><div class="value">{{ stats.classes|intcomma }}</div><div class="label">Classes</div></div></div>
+  <div class="stat"><div class="icon gold"><i class="fas fa-poll"></i></div>
+    <div><div class="value">{{ stats.results|intcomma }}</div><div class="label">Results in {{ latest_session|default:"this session" }}</div></div></div>
+  <div class="stat"><div class="icon {% if stats.approved < stats.term_classes %}red{% endif %}"><i class="fas fa-signature"></i></div>
+    <div><div class="value">{{ stats.approved }}<span class="muted" style="font-size: 15px"> / {{ stats.term_classes }}</span></div>
+      <div class="label">Classes approved{% if latest_term %} for {{ latest_term }}{% endif %}</div></div></div>
+</div>
+
+<div class="row">
+  <div class="col-lg-7">
+    <div class="panel">
+      <div class="panel-header"><h2>Quick actions</h2></div>
+      <div class="panel-body">
+        <div class="action-grid">
+          <a class="action-tile" href="{% url 'std_upload' %}"><i class="fas fa-file-upload"></i><div><strong>Upload results</strong><span>From the Excel score sheet</span></div></a>
+          <a class="action-tile" href="{% url 'excel_score_sheet' %}"><i class="fas fa-file-download"></i><div><strong>Download score sheet</strong><span>Excel template for a class</span></div></a>
+          <a class="action-tile" href="{% url 'updateresult' %}"><i class="fas fa-edit"></i><div><strong>Update results</strong><span>Correct scores for a class</span></div></a>
+          <a class="action-tile" href="{% url 'settings' %}"><i class="fas fa-clipboard-check"></i><div><strong>Behavioural assessment</strong><span>Enter for a class</span></div></a>
+          <a class="action-tile" href="{% url 'class_result_summary' %}"><i class="fas fa-table"></i><div><strong>Class broadsheet</strong><span>All subjects at a glance</span></div></a>
+          <a class="action-tile" href="{% url 'sign_results' %}"><i class="fas fa-signature"></i><div><strong>Sign results</strong><span>Sign off and approve</span></div></a>
+          {% if can_review %}<a class="action-tile" href="{% url 'review_home' %}"><i class="fas fa-clipboard-list"></i><div><strong>Data review</strong><span>Fix duplicates and bad scores</span></div></a>{% endif %}
+          {% if can.promote %}<a class="action-tile" href="{% url 'promote' %}"><i class="fas fa-level-up-alt"></i><div><strong>Promote students</strong><span>End-of-session promotion</span></div></a>{% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-5">
+    <div class="panel">
+      <div class="panel-header"><h2>Recent activity</h2>{% if can.view_audit %}<a href="{% url 'audit_log' %}" class="small">View all</a>{% endif %}</div>
+      {% if activity %}
+      <ul class="list-unstyled mb-0">
+        {% for e in activity %}
+        <li class="px-3 py-2 {% if not forloop.first %}border-top{% endif %}">
+          <div style="font-size: 13.5px">{{ e.object_repr|truncatechars:70 }}</div>
+          <div class="muted" style="font-size: 12px">{{ e.get_action_display }} · {{ e.username|default:"system" }} · {{ e.timestamp|timesince }} ago</div>
+        </li>
+        {% endfor %}
+      </ul>
+      {% else %}
+      <div class="empty-state"><i class="fas fa-stream"></i>No activity yet.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

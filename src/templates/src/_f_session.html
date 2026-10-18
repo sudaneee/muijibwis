@@ -1,0 +1,7 @@
+<div class="form-group col-md">
+  <label for="f-session">Session</label>
+  <select class="custom-select" name="session" id="f-session" required>
+    <option value="">Choose session</option>
+    {% for i in sessions %}<option value="{{ i.id }}" {% if sel.session.id == i.id %}selected{% endif %}>{{ i.session_name }}</option>{% endfor %}
+  </select>
+</div>

@@ -1,0 +1,21 @@
+{% extends "src/index.html" %}
+{% block title %}Delete assessments{% endblock %}
+{% block crumb %}Administration{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Delete behavioural assessments</h1>
+    <p>Remove a class's assessments for a term that were uploaded by mistake. Deleted assessments go to the <a href="{% url 'recycle_bin' %}">Recycle Bin</a>.</p>
+  </div>
+</div>
+
+{% include "src/_delete_confirm.html" %}
+
+{% if not confirm %}
+<form name="form1" method="POST" class="panel" style="max-width: 900px">
+  {% csrf_token %}
+  <div class="panel-body"><div class="form-row">{% include "src/_f_session.html" %}{% include "src/_f_term.html" %}{% include "src/_f_class.html" with archived=True %}</div></div>
+  <div class="panel-footer"><button name="form1" type="submit" class="btn btn-outline-danger"><i class="fas fa-trash-alt"></i>Review and delete</button></div>
+</form>
+{% endif %}
+{% endblock %}

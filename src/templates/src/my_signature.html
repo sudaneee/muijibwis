@@ -1,0 +1,71 @@
+{% extends "src/index.html" %}
+{% block title %}My signature{% endblock %}
+{% block crumb %}Account{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>My signature</h1>
+    <p>Your signature is printed on report cards you sign or approve. Draw it with a mouse or finger, or upload a photo of your signature on white paper.</p>
+  </div>
+</div>
+
+<div class="row">
+  <div class="col-lg-8">
+    <form method="POST" id="draw-form" class="panel">
+      {% csrf_token %}
+      <div class="panel-header"><h2>Draw</h2><span class="hint">Sign inside the box</span></div>
+      <div class="panel-body">
+        <canvas id="pad" class="signature-pad" width="600" height="200"></canvas>
+        <input type="hidden" name="signature_data" id="signature_data">
+      </div>
+      <div class="panel-footer">
+        <button type="button" id="clear" class="btn btn-light"><i class="fas fa-eraser"></i>Clear</button>
+        <button name="action" value="draw" class="btn btn-primary"><i class="fas fa-save"></i>Save drawn signature</button>
+      </div>
+    </form>
+    <form method="POST" enctype="multipart/form-data" class="panel">
+      {% csrf_token %}
+      <div class="panel-header"><h2>Or upload an image</h2></div>
+      <div class="panel-body">
+        <div class="file-drop"><i class="fas fa-image"></i><div class="flex-grow-1"><input type="file" name="signature_file" accept="image/*" class="form-control-file" required><div class="help mt-1">A clear photo or scan; the white background is removed automatically.</div></div></div>
+      </div>
+      <div class="panel-footer"><button name="action" value="upload" class="btn btn-primary"><i class="fas fa-upload"></i>Upload</button></div>
+    </form>
+  </div>
+  <div class="col-lg-4">
+    <div class="panel">
+      <div class="panel-header"><h2>Current signature</h2></div>
+      <div class="panel-body">
+        {% if signature %}
+          <div class="sig-preview mb-3"><img src="{{ signature }}" alt="your signature" style="max-height: 90px; max-width: 100%"></div>
+          <form method="POST" onsubmit="return confirm('Remove your signature? Results you already signed keep the copy made at signing.');">
+            {% csrf_token %}<button name="action" value="remove" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash-alt"></i>Remove</button>
+          </form>
+        {% else %}
+          <div class="empty-state py-3"><i class="fas fa-signature"></i>No signature yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block scripts %}
+<script>
+(function () {
+  var pad = document.getElementById('pad'), ctx = pad.getContext('2d'), drawing = false, drawn = false;
+  ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = '#111';
+  function point(e) {
+    var r = pad.getBoundingClientRect();
+    return {x: (e.clientX - r.left) * pad.width / r.width, y: (e.clientY - r.top) * pad.height / r.height};
+  }
+  pad.addEventListener('pointerdown', function (e) { drawing = true; var p = point(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); pad.setPointerCapture(e.pointerId); e.preventDefault(); });
+  pad.addEventListener('pointermove', function (e) { if (!drawing) return; var p = point(e); ctx.lineTo(p.x, p.y); ctx.stroke(); drawn = true; });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach(function (t) { pad.addEventListener(t, function () { drawing = false; }); });
+  document.getElementById('clear').addEventListener('click', function () { ctx.clearRect(0, 0, pad.width, pad.height); drawn = false; });
+  document.getElementById('draw-form').addEventListener('submit', function (e) {
+    if (!drawn) { e.preventDefault(); alert('Draw your signature first.'); return; }
+    document.getElementById('signature_data').value = pad.toDataURL('image/png');
+  });
+})();
+</script>
+{% endblock %}

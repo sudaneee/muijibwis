@@ -1,0 +1,11 @@
+{% extends "src/index.html" %}
+{% block title %}Your session has expired{% endblock %}
+{% block content %}
+<div class="panel mx-auto" style="max-width: 520px; margin-top: 24px">
+  <div class="panel-body text-center py-5">
+    <div class="stat mx-auto mb-3" style="width: 64px; height: 64px; padding: 0; justify-content: center; border: 0; box-shadow: none"><div class="icon gold" style="width: 64px; height: 64px; font-size: 24px"><i class="fas fa-clock"></i></div></div>
+    <h1 class="h4">Your session has expired</h1>
+    <p class="muted">The form could not be submitted, usually because the page was open for a long time or you logged in on another tab. Go back, reload the page and try again. Nothing was saved.</p><a href="{% url 'home' %}" class="btn btn-primary mt-2">Back to the start</a>
+  </div>
+</div>
+{% endblock %}

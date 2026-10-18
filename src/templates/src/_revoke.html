@@ -1,0 +1,6 @@
+<form method="POST" class="form-inline justify-content-end" onsubmit="return confirm('Withdraw this sign-off? The results can then be changed and must be signed again.');">
+  {% csrf_token %}{% include "src/_sign_hidden.html" %}
+  <input type="hidden" name="approval_id" value="{{ approval.id }}">
+  <input name="reason" class="form-control form-control-sm mr-2 mb-1" placeholder="Reason for reopening" required maxlength="300">
+  <button name="action" value="revoke" class="btn btn-sm btn-outline-danger mb-1"><i class="fas fa-lock-open"></i>Reopen</button>
+</form>

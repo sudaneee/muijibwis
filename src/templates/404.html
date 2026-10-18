@@ -1,0 +1,11 @@
+{% extends "src/index.html" %}
+{% block title %}Page not found{% endblock %}
+{% block content %}
+<div class="panel mx-auto" style="max-width: 520px; margin-top: 24px">
+  <div class="panel-body text-center py-5">
+    <div class="stat mx-auto mb-3" style="width: 64px; height: 64px; padding: 0; justify-content: center; border: 0; box-shadow: none"><div class="icon blue" style="width: 64px; height: 64px; font-size: 24px"><i class="fas fa-compass"></i></div></div>
+    <h1 class="h4">Page not found</h1>
+    <p class="muted">The page you asked for does not exist. It may have moved, or the link may be mistyped.</p><a href="{% url 'home' %}" class="btn btn-primary mt-2">Back to the start</a>
+  </div>
+</div>
+{% endblock %}

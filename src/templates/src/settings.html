@@ -1,0 +1,51 @@
+{% extends "src/index.html" %}
+{% block title %}Enter assessments{% endblock %}
+{% block crumb %}Behaviour{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Behavioural assessment</h1>
+    <p>Rate each student from 0 to 5 in every area for the term.</p>
+  </div>
+  <div class="page-actions"><a href="{% url 'bhvxl' %}" class="btn btn-light"><i class="fas fa-file-upload"></i>Upload from Excel instead</a></div>
+</div>
+
+<form name="form1" method="POST" class="panel">
+  {% csrf_token %}
+  <div class="panel-body">
+    <div class="form-row">{% include "src/_f_session.html" %}{% include "src/_f_term.html" %}{% include "src/_f_class.html" %}</div>
+  </div>
+  <div class="panel-footer"><button name="form1" type="submit" class="btn btn-primary"><i class="fas fa-users"></i>Load students</button></div>
+</form>
+
+{% if sel %}
+<form name="form2" method="POST" class="panel">
+  {% csrf_token %}
+  <div class="panel-header"><h2>Ratings (0–5)</h2><span class="hint">{{ students|length }} students</span></div>
+  <div class="panel-body pb-0">{% include "src/_selection.html" %}</div>
+  <div class="table-scroll">
+    <table class="table table-app table-sm">
+      <thead><tr><th>Student</th><th class="text-center">Conduct</th><th class="text-center">Punctuality</th><th class="text-center">Dedication</th><th class="text-center">Participation</th><th class="text-center">Hospitality</th><th class="text-center">Neatness</th><th class="text-center">Creativity</th><th class="text-center">Physical</th></tr></thead>
+      <tbody>
+      {% for i in students %}
+        <tr>
+          <td style="min-width: 180px"><input type="hidden" name="student_id" value="{{ i.id }}"><input type="hidden" name="name" value="{{ i.student_name }}">{{ i.student_name }}</td>
+          <td class="text-center"><input type="number" min="0" max="5" class="form-control form-control-sm score-input d-inline-block" value="{{ i.typed.conduct|default:0 }}" name="conduct"></td>
+          <td class="text-center"><input type="number" min="0" max="5" class="form-control form-control-sm score-input d-inline-block" value="{{ i.typed.punctuality|default:0 }}" name="punctuality"></td>
+          <td class="text-center"><input type="number" min="0" max="5" class="form-control form-control-sm score-input d-inline-block" value="{{ i.typed.dedication|default:0 }}" name="dedication"></td>
+          <td class="text-center"><input type="number" min="0" max="5" class="form-control form-control-sm score-input d-inline-block" value="{{ i.typed.participation|default:0 }}" name="participation"></td>
+          <td class="text-center"><input type="number" min="0" max="5" class="form-control form-control-sm score-input d-inline-block" value="{{ i.typed.hospitality|default:0 }}" name="hospitality"></td>
+          <td class="text-center"><input type="number" min="0" max="5" class="form-control form-control-sm score-input d-inline-block" value="{{ i.typed.neatness|default:0 }}" name="neatness"></td>
+          <td class="text-center"><input type="number" min="0" max="5" class="form-control form-control-sm score-input d-inline-block" value="{{ i.typed.creativity|default:0 }}" name="creativity"></td>
+          <td class="text-center"><input type="number" min="0" max="5" class="form-control form-control-sm score-input d-inline-block" value="{{ i.typed.physical|default:0 }}" name="physical"></td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="9"><div class="empty-state"><i class="fas fa-user-slash"></i>No students in this class.</div></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="panel-footer"><button name="form2" type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Save assessments</button></div>
+</form>
+{% endif %}
+{% endblock %}

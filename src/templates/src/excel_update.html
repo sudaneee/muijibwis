@@ -1,0 +1,51 @@
+{% extends 'src/index.html' %}
+{% block title %}Update with Excel{% endblock %}
+{% block crumb %}Results{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Update results with Excel</h1>
+    <p>Correct many scores at once. You will see every change before anything is saved; totals and positions update automatically.</p>
+  </div>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="panel">
+  {% csrf_token %}
+  <div class="panel-body">
+    <ol class="steps"><li><span class="n">1</span>Download current scores</li><li><span class="n">2</span>Change only the score columns</li><li><span class="n">3</span>Upload and check the changes</li></ol>
+    <div class="form-row">{% include "src/_f_session.html" %}{% include "src/_f_term.html" %}{% include "src/_f_class.html" %}{% include "src/_f_subject.html" %}</div>
+    <div class="file-drop">
+      <i class="fas fa-file-excel"></i>
+      <div class="flex-grow-1"><input type="file" name="excel_file" accept=".xlsx" class="form-control-file"><div class="help mt-1">The edited "update" sheet (.xlsx).</div></div>
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button name="action" value="download" class="btn btn-light" formnovalidate><i class="fas fa-file-download"></i>Download current scores</button>
+    <button name="action" value="preview" class="btn btn-primary"><i class="fas fa-eye"></i>Upload and preview changes</button>
+  </div>
+</form>
+
+{% if preview %}
+<form method="post" class="panel">
+  {% csrf_token %}
+  <input type="hidden" name="token" value="{{ token }}">
+  <div class="panel-header"><h2>{{ preview|length }} change{{ preview|length|pluralize }}</h2><span class="hint">{{ label }}</span></div>
+  <div class="table-scroll">
+    <table class="table table-app table-sm">
+      <thead><tr><th>Student</th><th class="text-center">1st C.A</th><th class="text-center">2nd C.A</th><th class="text-center">Exams</th></tr></thead>
+      <tbody>
+      {% for c in preview %}
+        <tr>
+          <td>{{ c.name }}</td>
+          <td class="text-center">{% if c.old.0 != c.new.0 %}<s class="muted">{{ c.old.0 }}</s> → <strong>{{ c.new.0 }}</strong>{% else %}{{ c.old.0 }}{% endif %}</td>
+          <td class="text-center">{% if c.old.1 != c.new.1 %}<s class="muted">{{ c.old.1 }}</s> → <strong>{{ c.new.1 }}</strong>{% else %}{{ c.old.1 }}{% endif %}</td>
+          <td class="text-center">{% if c.old.2 != c.new.2 %}<s class="muted">{{ c.old.2 }}</s> → <strong>{{ c.new.2 }}</strong>{% else %}{{ c.old.2 }}{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="panel-footer"><button name="action" value="confirm" class="btn btn-success"><i class="fas fa-check"></i>Apply {{ preview|length }} change{{ preview|length|pluralize }}</button></div>
+</form>
+{% endif %}
+{% endblock content %}

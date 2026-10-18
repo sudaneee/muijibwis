@@ -1,0 +1,14 @@
+<div class="page-header">
+  <div>
+    <h1>Data review</h1>
+    <p>Fix problem records{% if not sees_all %} in {{ my_section }}{% endif %}. Every correction is logged and can be undone from the overview.</p>
+  </div>
+  <div class="page-actions"><a href="{% url 'review_export' %}" class="btn btn-light"><i class="fas fa-file-excel"></i>Download Excel</a></div>
+</div>
+<nav class="tabs">
+  <a href="{% url 'review_home' %}" class="{% if active == 'home' %}active{% endif %}">Overview</a>
+  <a href="{% url 'review_duplicates' %}" class="{% if active == 'duplicates' %}active{% endif %}">Duplicates</a>
+  <a href="{% url 'review_scores' %}" class="{% if active == 'scores' %}active{% endif %}">Scores</a>
+  <a href="{% url 'review_behaviour' %}" class="{% if active == 'behaviour' %}active{% endif %}">Behaviour</a>
+  <a href="{% url 'review_students' %}" class="{% if active == 'students' %}active{% endif %}">Students</a>
+</nav>

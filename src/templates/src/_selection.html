@@ -1,0 +1,5 @@
+<input type="hidden" name="session" value="{{ sel.session.id }}">
+<input type="hidden" name="term" value="{{ sel.term.id }}">
+<input type="hidden" name="class" value="{{ sel.class.id }}">
+{% if sel.subject %}<input type="hidden" name="subject" value="{{ sel.subject.id }}">{% endif %}
+<div class="selection-chip"><i class="fas fa-layer-group"></i> {{ sel.class.name }}{% if sel.subject %} · {{ sel.subject }}{% endif %} · {{ sel.session }} · {{ sel.term }}</div>

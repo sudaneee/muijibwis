@@ -1,0 +1,120 @@
+{% load static %}<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}RynoB Exams Pro{% endblock %} · Ma'ahad Ulumiddinil Islamiy</title>
+  <link rel="icon" href="{% static 'logo.jpg' %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'src/app.css' %}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+{% if user.is_authenticated %}
+<div class="app-shell">
+  <aside class="sidebar" id="sidebar">
+    <a class="sidebar-brand" href="{% url 'home' %}">
+      <img src="{% static 'logo.jpg' %}" alt="">
+      <div><div class="name">RynoB Exams Pro</div><div class="sub">Ma'ahad Ulumiddinil Islamiy</div></div>
+    </a>
+    <nav class="sidebar-nav">
+      {% include "src/_nav_link.html" with name="home" icon="fa-th-large" label="Dashboard" %}
+
+      <div class="nav-section">Results</div>
+      {% include "src/_nav_link.html" with name="resultcreate" icon="fa-pen" label="Enter results" %}
+      {% include "src/_nav_link.html" with name="std_upload" icon="fa-file-upload" label="Upload results (Excel)" %}
+      {% include "src/_nav_link.html" with name="not_uploaded_results" icon="fa-user-plus" label="Add missed results" %}
+      {% include "src/_nav_link.html" with name="updateresult" icon="fa-edit" label="Update results" %}
+      {% include "src/_nav_link.html" with name="single_result_update" icon="fa-user-edit" label="Update one student" %}
+      {% include "src/_nav_link.html" with name="result_excel_update" icon="fa-file-excel" label="Update with Excel" %}
+
+      <div class="nav-section">Reports</div>
+      {% include "src/_nav_link.html" with name="result_view" icon="fa-id-card" label="Report cards" %}
+      {% include "src/_nav_link.html" with name="class_result_summary" icon="fa-table" label="Class broadsheet" %}
+      {% include "src/_nav_link.html" with name="class-result-summary" icon="fa-chart-bar" label="Subject analysis" %}
+      {% include "src/_nav_link.html" with name="single_result_view" icon="fa-search" label="Result checker" %}
+
+      <div class="nav-section">Behaviour</div>
+      {% include "src/_nav_link.html" with name="settings" icon="fa-clipboard-check" label="Enter assessments" %}
+      {% include "src/_nav_link.html" with name="bhvxl" icon="fa-file-upload" label="Upload assessments" %}
+      {% include "src/_nav_link.html" with name="bhvxl-missed" icon="fa-user-plus" label="Add missed assessments" %}
+
+      <div class="nav-section">Students &amp; sheets</div>
+      {% if can.manage_students %}
+      {% include "src/_nav_link.html" with name="std_create" icon="fa-users" label="Add students" %}
+      {% include "src/_nav_link.html" with name="Std-Alts" icon="fa-user-cog" label="Manage students" %}
+      {% endif %}
+      {% if can.promote %}{% include "src/_nav_link.html" with name="promote" icon="fa-level-up-alt" label="Promote students" %}{% endif %}
+      {% include "src/_nav_link.html" with name="score_sheet" icon="fa-print" label="Score sheets" %}
+      {% include "src/_nav_link.html" with name="behav_sheet" icon="fa-file-download" label="Assessment sheet" %}
+
+      <div class="nav-section">Approval &amp; quality</div>
+      {% include "src/_nav_link.html" with name="sign_results" icon="fa-signature" label="Sign results" %}
+      {% if can_review %}{% include "src/_nav_link.html" with name="review_home" icon="fa-clipboard-list" label="Data review" %}{% endif %}
+
+      {% if can.delete_records or can.view_audit or can.manage_users %}
+      <div class="nav-section">Administration</div>
+      {% if can.delete_records %}
+      {% include "src/_nav_link.html" with name="delete_result" icon="fa-trash-alt" label="Delete results" %}
+      {% include "src/_nav_link.html" with name="delete_bhv" icon="fa-trash" label="Delete assessments" %}
+      {% include "src/_nav_link.html" with name="recycle_bin" icon="fa-recycle" label="Recycle bin" %}
+      {% endif %}
+      {% if can.view_audit %}{% include "src/_nav_link.html" with name="audit_log" icon="fa-history" label="Audit trail" %}{% endif %}
+      {% if can.manage_users %}{% include "src/_nav_link.html" with name="users" icon="fa-user-shield" label="Users" %}{% endif %}
+      {% if user.is_superuser %}{% include "src/_nav_link.html" with name="admin:index" icon="fa-tools" label="Admin panel" %}{% endif %}
+      {% endif %}
+    </nav>
+    <div class="sidebar-user">
+      <strong>{% firstof user.get_full_name user.username %}</strong>
+      {{ my_role }}{% if my_section %} · {{ my_section }}{% elif sees_all %} · All sections{% endif %}
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" onclick="document.body.classList.remove('sidebar-open')"></div>
+
+  <div class="main-area">
+    <header class="topbar no-print">
+      <button class="menu-toggle" type="button" aria-label="Open menu" onclick="document.body.classList.toggle('sidebar-open')"><i class="fas fa-bars"></i></button>
+      <div class="crumb">{% block crumb %}{% endblock %}</div>
+      <div class="spacer"></div>
+      <div class="dropdown">
+        <button class="user-menu-btn" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+          <span class="avatar">{% if user.first_name %}{{ user.first_name|slice:":1" }}{{ user.last_name|slice:":1" }}{% else %}{{ user.username|slice:":2" }}{% endif %}</span>
+          <span class="who">{% firstof user.get_full_name user.username %}<small>{{ my_role }}</small></span>
+          <i class="fas fa-chevron-down muted" style="font-size: 11px"></i>
+        </button>
+        <div class="dropdown-menu dropdown-menu-right shadow-sm">
+          <a class="dropdown-item" href="{% url 'my_signature' %}"><i class="fas fa-signature mr-2 muted"></i>My signature</a>
+          <a class="dropdown-item" href="{% url 'password_change' %}"><i class="fas fa-key mr-2 muted"></i>Change password</a>
+          <div class="dropdown-divider"></div>
+          <a class="dropdown-item" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt mr-2 muted"></i>Log out</a>
+        </div>
+      </div>
+    </header>
+    <main class="content">
+{% else %}
+<div class="public-shell">
+  <header class="public-top">
+    <a href="{% url 'home' %}"><img src="{% static 'logo.jpg' %}" alt=""> Ma'ahad Ulumiddinil Islamiy</a>
+    <div class="spacer"></div>
+    <a class="btn btn-sm btn-outline-light" href="{% url 'home' %}">Staff login</a>
+  </header>
+  <main class="public-main">
+{% endif %}
+      {% include "src/_messages.html" %}
+      {% block content %}{% endblock %}
+{% if user.is_authenticated %}
+    </main>
+  </div>
+</div>
+{% else %}
+  </main>
+</div>
+{% endif %}
+<script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

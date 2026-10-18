@@ -1,0 +1,11 @@
+{% extends "src/index.html" %}
+{% block title %}Not allowed{% endblock %}
+{% block content %}
+<div class="panel mx-auto" style="max-width: 520px; margin-top: 24px">
+  <div class="panel-body text-center py-5">
+    <div class="stat mx-auto mb-3" style="width: 64px; height: 64px; padding: 0; justify-content: center; border: 0; box-shadow: none"><div class="icon red" style="width: 64px; height: 64px; font-size: 24px"><i class="fas fa-lock"></i></div></div>
+    <h1 class="h4">Not allowed</h1>
+    <p class="muted">{% if exception %}{{ exception }}{% else %}You do not have permission to do that.{% endif %}</p><p class="muted">If you think you should have access, ask an administrator to check your role and section.</p><a href="{% url 'home' %}" class="btn btn-primary mt-2">Back to the dashboard</a>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "src/index.html" %}
+{% block title %}Delete results{% endblock %}
+{% block crumb %}Administration{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Delete results</h1>
+    <p>Remove results uploaded by mistake. You will see how many records are affected and must confirm with a reason. Nothing is erased: deleted results go to the <a href="{% url 'recycle_bin' %}">Recycle Bin</a>.</p>
+  </div>
+</div>
+
+{% include "src/_delete_confirm.html" %}
+
+{% if not confirm %}
+<div class="row">
+  <div class="col-xl-6">
+    <form name="form2" method="POST" class="panel">
+      {% csrf_token %}
+      <div class="panel-header"><h2>One subject</h2><span class="hint">Results for a single subject</span></div>
+      <div class="panel-body">
+        <div class="form-row">{% include "src/_f_session.html" %}{% include "src/_f_term.html" %}</div>
+        <div class="form-row">{% include "src/_f_class.html" with archived=True %}{% include "src/_f_subject.html" %}</div>
+      </div>
+      <div class="panel-footer"><button name="form2" type="submit" class="btn btn-outline-danger"><i class="fas fa-trash-alt"></i>Review and delete</button></div>
+    </form>
+  </div>
+  <div class="col-xl-6">
+    <form name="form1" method="POST" class="panel">
+      {% csrf_token %}
+      <div class="panel-header"><h2>Whole class</h2><span class="hint">All subjects for the term</span></div>
+      <div class="panel-body">
+        <div class="form-row">{% include "src/_f_session.html" %}{% include "src/_f_term.html" %}</div>
+        <div class="form-row">{% include "src/_f_class.html" with archived=True %}</div>
+      </div>
+      <div class="panel-footer"><button name="form1" type="submit" class="btn btn-outline-danger"><i class="fas fa-trash-alt"></i>Review and delete</button></div>
+    </form>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

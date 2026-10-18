@@ -1,0 +1,75 @@
+{% extends "src/index.html" %}
+{% block title %}Students · Data review{% endblock %}
+{% block crumb %}Approval &amp; quality{% endblock %}
+{% block content %}
+{% include "src/review/_header.html" with active="students" %}
+
+<h2 class="h5 mb-1">Students entered twice in the same class</h2>
+<p class="muted">A record with no results or assessments can be removed. If both records have results they may be two different students with the same name — mark them as different.</p>
+{% for g in duplicates %}
+<div class="review-group">
+  <div class="table-wrap">
+    <table class="table table-app table-sm">
+      <thead><tr><th>ID</th><th>Name</th><th>Class</th><th class="text-num">Results</th><th class="text-num">Assessments</th><th></th></tr></thead>
+      <tbody>
+      {% for s in g.members %}
+        <tr>
+          <td class="muted">{{ s.id }}</td><td>{{ s.student_name }}</td><td>{{ s.student_class.name }}</td>
+          <td class="text-num">{{ s.result_count }}</td><td class="text-num">{{ s.behaviour_count }}</td>
+          <td class="text-right">
+            {% if not s.result_count and not s.behaviour_count %}
+            <form method="post" class="d-inline" onsubmit="return confirm('Remove this empty record? It can be restored from Data Review.');">
+              {% csrf_token %}<input type="hidden" name="action" value="remove"><input type="hidden" name="student_id" value="{{ s.id }}">
+              <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash-alt"></i>Remove empty record</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <form method="post" class="foot">
+    {% csrf_token %}<input type="hidden" name="action" value="dismiss"><input type="hidden" name="pair" value="{{ g.pair }}">
+    <input name="note" class="form-control form-control-sm" style="max-width: 340px" placeholder="Note (optional)">
+    <button class="btn btn-sm btn-light"><i class="fas fa-user-check"></i>These are different students</button>
+  </form>
+</div>
+{% empty %}
+<div class="panel"><div class="empty-state"><i class="fas fa-check-circle text-success"></i>No duplicate students.</div></div>
+{% endfor %}
+
+{% if sees_all %}
+<h2 id="no-class" class="h5 mb-1 mt-5">Students without a class</h2>
+<p class="muted">These students have results but no current class, so no section can see them. The suggestion is the class of their most recent result.</p>
+<div class="panel">
+  {% if no_class %}
+  <div class="table-wrap">
+    <table class="table table-app table-sm">
+      <thead><tr><th>ID</th><th>Name</th><th class="text-num">Results</th><th>Last result in</th><th style="width: 40%">Assign to class</th></tr></thead>
+      <tbody>
+      {% for s in no_class %}
+        <tr>
+          <td class="muted">{{ s.id }}</td><td>{{ s.student_name }}</td><td class="text-num">{{ s.result_count }}</td>
+          <td>{{ s.last_class|default:"—" }}{% if s.last_session %} <span class="muted">({{ s.last_session }})</span>{% endif %}</td>
+          <td>
+            <form method="post" class="form-inline">
+              {% csrf_token %}<input type="hidden" name="action" value="assign"><input type="hidden" name="student_id" value="{{ s.id }}">
+              <select name="class_id" class="custom-select custom-select-sm mr-2" style="max-width: 260px" required>
+                <option value="">Choose class</option>
+                {% for c in all_classes %}<option value="{{ c.id }}" {% if s.last_class and c.id == s.last_class.id %}selected{% endif %}>{{ c.class_name }}{% if c.is_archived %} (archived){% endif %}</option>{% endfor %}
+              </select>
+              <button class="btn btn-sm btn-primary">Assign</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-check-circle text-success"></i>Every student has a class.</div>
+  {% endif %}
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,26 @@
+{% extends "src/index.html" %}
+{% block title %}Reports{% endblock %}
+{% block crumb %}Reports{% endblock %}
+{% block content %}
+{% url 'class_result_summary' as broadsheet_url %}
+<div class="page-header">
+  <div>
+    {% if request.path == broadsheet_url %}
+    <h1>Class broadsheet</h1>
+    <p>Every student's scores in every subject for one class and term, ready to print.</p>
+    {% else %}
+    <h1>Report cards</h1>
+    <p>Print the report cards for a class. Students appear in alphabetical order; approved results carry the e-signatures and a verification code.</p>
+    {% endif %}
+  </div>
+</div>
+<form name="form1" method="POST" class="panel" style="max-width: 900px">
+  {% csrf_token %}
+  <div class="panel-body">
+    <div class="form-row">{% include "src/_f_session.html" %}{% include "src/_f_term.html" %}{% include "src/_f_class.html" with archived=True %}</div>
+  </div>
+  <div class="panel-footer">
+    <button name="form1" type="submit" class="btn btn-primary">{% if request.path == broadsheet_url %}<i class="fas fa-table"></i>Show broadsheet{% else %}<i class="fas fa-id-card"></i>Show report cards{% endif %}</button>
+  </div>
+</form>
+{% endblock %}

@@ -1,0 +1,57 @@
+{% extends "src/index.html" %}
+{% block title %}{{ account.username }}{% endblock %}
+{% block crumb %}Administration{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>{{ account.username }}{% if profile.is_legacy_shared %} <span class="badge badge-soft-warning" style="font-size: 12px; vertical-align: middle">shared account</span>{% endif %}</h1>
+    <p>{% if profile.is_legacy_shared %}Deactivate this account once the people using it have personal accounts.{% else %}Edit details, role and section, or set a temporary password.{% endif %}</p>
+  </div>
+  <div class="page-actions"><a href="{% url 'users' %}" class="btn btn-light"><i class="fas fa-arrow-left"></i>All users</a></div>
+</div>
+
+<div class="row">
+  <div class="col-lg-7">
+    <form method="POST" class="panel">
+      {% csrf_token %}
+      <div class="panel-header"><h2>Details</h2></div>
+      <div class="panel-body">
+        <div class="form-row">
+          <div class="form-group col"><label>First name</label><input class="form-control" name="first_name" value="{{ account.first_name }}"></div>
+          <div class="form-group col"><label>Last name</label><input class="form-control" name="last_name" value="{{ account.last_name }}"></div>
+        </div>
+        <div class="form-group"><label>Email</label><input class="form-control" type="email" name="email" value="{{ account.email }}"></div>
+        <div class="form-row">
+          <div class="form-group col"><label>Role</label>
+            <select class="custom-select" name="role">
+              {% for value, label in roles %}<option value="{{ value }}" {% if profile.role == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="form-group col"><label>Section</label>
+            <select class="custom-select" name="section">
+              <option value="">— (Administrator: all sections)</option>
+              {% for s in sections %}<option value="{{ s.id }}" {% if profile.section_id == s.id %}selected{% endif %}>{{ s.section_name }}</option>{% endfor %}
+            </select>
+          </div>
+        </div>
+        <div class="custom-control custom-switch">
+          <input type="checkbox" class="custom-control-input" id="active" name="is_active" value="1" {% if account.is_active %}checked{% endif %}>
+          <label class="custom-control-label" for="active">Account active <span class="muted">(deactivating keeps the account and its history)</span></label>
+        </div>
+      </div>
+      <div class="panel-footer"><button class="btn btn-primary"><i class="fas fa-save"></i>Save</button></div>
+    </form>
+  </div>
+  <div class="col-lg-5">
+    <form method="POST" class="panel">
+      {% csrf_token %}
+      <div class="panel-header"><h2>Reset password</h2></div>
+      <div class="panel-body">
+        <div class="form-group"><label>Temporary password</label><input class="form-control" type="password" name="new_password" required autocomplete="new-password"></div>
+        <p class="help">They will be asked to choose their own password when they next log in.</p>
+      </div>
+      <div class="panel-footer"><button name="reset_password" value="1" class="btn btn-outline-danger"><i class="fas fa-key"></i>Set temporary password</button></div>
+    </form>
+  </div>
+</div>
+{% endblock %}

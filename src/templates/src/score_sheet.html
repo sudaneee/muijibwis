@@ -1,0 +1,33 @@
+{% extends "src/index.html" %}
+{% block title %}Score sheets{% endblock %}
+{% block crumb %}Students &amp; sheets{% endblock %}
+{% block content %}
+{% url 'excel_score_sheet' as excel_url %}
+<div class="page-header">
+  <div>
+    {% if request.path == excel_url %}
+    <h1>Download score sheet</h1>
+    <p>An Excel sheet with the class's students, ready for C.A and exam scores. Upload it back on <a href="{% url 'std_upload' %}">Upload results</a>.</p>
+    {% else %}
+    <h1>Print score sheet</h1>
+    <p>A printable list of a class's students for recording scores by hand.</p>
+    {% endif %}
+  </div>
+  <div class="page-actions">
+    {% if request.path == excel_url %}<a href="{% url 'score_sheet' %}" class="btn btn-light"><i class="fas fa-print"></i>Printable sheet</a>
+    {% else %}<a href="{% url 'excel_score_sheet' %}" class="btn btn-light"><i class="fas fa-file-excel"></i>Excel sheet</a>{% endif %}
+  </div>
+</div>
+<form name="form1" method="POST" class="panel" style="max-width: 760px">
+  {% csrf_token %}
+  <div class="panel-body">
+    <div class="form-row">
+      {% include "src/_f_class.html" %}
+      {% if request.path == excel_url %}{% include "src/_f_subject.html" %}{% endif %}
+    </div>
+  </div>
+  <div class="panel-footer">
+    <button name="form1" type="submit" class="btn btn-primary">{% if request.path == excel_url %}<i class="fas fa-file-download"></i>Download sheet{% else %}<i class="fas fa-print"></i>Show printable sheet{% endif %}</button>
+  </div>
+</form>
+{% endblock %}

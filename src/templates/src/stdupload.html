@@ -1,0 +1,30 @@
+{% extends "src/index.html" %}
+{% block title %}Upload results{% endblock %}
+{% block crumb %}Results{% endblock %}
+{% block content %}
+{% url 'not_uploaded_results' as missed_url %}
+<div class="page-header">
+  <div>
+    {% if request.path == missed_url %}
+    <h1>Add missed results</h1>
+    <p>Upload results for students who were left out of a class's earlier upload. Students who already have a result for the subject are refused.</p>
+    {% else %}
+    <h1>Upload results from Excel</h1>
+    <p>Upload the completed score sheet for one class and subject. The whole sheet is checked first; nothing is saved if any row has a problem.</p>
+    {% endif %}
+  </div>
+  <div class="page-actions"><a href="{% url 'excel_score_sheet' %}" class="btn btn-light"><i class="fas fa-file-download"></i>Download score sheet</a></div>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="panel">
+  {% csrf_token %}
+  <div class="panel-body">
+    <ol class="steps"><li><span class="n">1</span>Download the score sheet</li><li><span class="n">2</span>Fill in C.A and exam scores</li><li><span class="n">3</span>Upload it here</li></ol>
+    <div class="form-row">
+      {% include "src/_f_session.html" %}{% include "src/_f_term.html" %}{% include "src/_f_class.html" %}{% include "src/_f_subject.html" %}
+    </div>
+    {% include "src/_f_file.html" with hint="The \"result\" sheet from the downloaded score sheet (.xlsx), up to 5 MB." %}
+  </div>
+  <div class="panel-footer"><button name="form" type="submit" class="btn btn-primary"><i class="fas fa-upload"></i>Upload results</button></div>
+</form>
+{% endblock %}

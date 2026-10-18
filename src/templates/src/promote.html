@@ -1,0 +1,102 @@
+{% extends "src/index.html" %}
+{% block title %}Promote students{% endblock %}
+{% block crumb %}Students &amp; sheets{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Promote students</h1>
+    <p>Students whose third-term average is {{ pass_mark }} or more are ticked for promotion. Check the list, change any decision, then confirm. Every promotion can be reversed.</p>
+  </div>
+</div>
+
+<form method="POST" class="panel">
+  {% csrf_token %}
+  <div class="panel-body">
+    <div class="form-row">
+      <div class="form-group col-md">
+        <label>Session</label>
+        <select class="custom-select" name="session" required>
+          <option value="">Choose session</option>
+          {% for i in sessions %}<option value="{{ i.id }}" {% if session.id == i.id %}selected{% endif %}>{{ i.session_name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group col-md">
+        <label>From class</label>
+        <select class="custom-select" name="current_class" required>
+          <option value="">Choose class</option>
+          {% for i in classes %}<option value="{{ i.id }}" {% if source.id == i.id %}selected{% endif %}>{{ i.class_name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group col-md">
+        <label>To class</label>
+        <select class="custom-select" name="promotion_class" required>
+          <option value="">Choose class</option>
+          {% for i in classes %}<option value="{{ i.id }}" {% if target.id == i.id %}selected{% endif %}>{{ i.class_name }}</option>{% endfor %}
+          {% if archived_classes %}<optgroup label="Archived classes">
+          {% for i in archived_classes %}<option value="{{ i.id }}" {% if target.id == i.id %}selected{% endif %}>{{ i.class_name }}</option>{% endfor %}
+          </optgroup>{% endif %}
+        </select>
+      </div>
+    </div>
+    <div class="custom-control custom-checkbox">
+      <input type="checkbox" class="custom-control-input" id="move-all" name="move_all" value="1" {% if move_all %}checked{% endif %}>
+      <label class="custom-control-label" for="move-all">Graduating class — move everyone regardless of results</label>
+    </div>
+  </div>
+  <div class="panel-footer"><button name="preview" value="1" class="btn btn-primary"><i class="fas fa-eye"></i>Preview</button></div>
+</form>
+
+{% if rows %}
+<form method="POST" class="panel" onsubmit="return confirm('Move the ticked students from {{ source.name|escapejs }} to {{ target.name|escapejs }}?');">
+  {% csrf_token %}
+  <input type="hidden" name="session" value="{{ session.id }}">
+  <input type="hidden" name="current_class" value="{{ source.id }}">
+  <input type="hidden" name="promotion_class" value="{{ target.id }}">
+  <div class="panel-header"><h2>{{ source.name }} → {{ target.name }}</h2><span class="hint">{{ session }} · averages from {{ term|default:"the third term" }}</span></div>
+  <div class="table-scroll">
+    <table class="table table-app table-sm">
+      <thead><tr><th style="width: 80px">Promote</th><th>Student</th><th class="text-num">Subjects</th><th class="text-num">Average</th><th></th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td><input type="checkbox" name="student_id" value="{{ r.student.id }}" {% if r.promote %}checked{% endif %}></td>
+          <td>{{ r.student.student_name }}</td>
+          <td class="text-num">{{ r.subjects }}</td>
+          <td class="text-num">{% if r.average is None %}—{% else %}<strong>{{ r.average }}</strong>{% endif %}</td>
+          <td>{% if r.average is None %}<span class="badge badge-soft-warning">no third-term results</span>{% elif not r.promote %}<span class="badge badge-soft-danger">below {{ pass_mark }}</span>{% endif %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="panel-footer"><button name="confirm" value="1" class="btn btn-success"><i class="fas fa-level-up-alt"></i>Promote ticked students</button></div>
+</form>
+{% elif source %}
+<div class="panel"><div class="empty-state"><i class="fas fa-user-slash"></i>{{ source.name }} has no active students.</div></div>
+{% endif %}
+
+<div class="panel">
+  <div class="panel-header"><h2>Recent promotions</h2></div>
+  {% if history %}
+  <div class="table-wrap">
+    <table class="table table-app table-sm">
+      <thead><tr><th>When</th><th>By</th><th>What</th><th></th></tr></thead>
+      <tbody>
+      {% for e in history %}
+        <tr {% if e.undone %}class="muted"{% endif %}>
+          <td class="text-nowrap">{{ e.timestamp|date:"Y-m-d H:i" }}</td><td>{{ e.username }}</td><td>{{ e.object_repr }}</td>
+          <td class="text-right">{% if e.undone %}<span class="badge badge-soft-muted">Reversed</span>{% else %}
+            <form method="POST" class="d-inline" onsubmit="return confirm('Move these students back to their previous class?');">
+              {% csrf_token %}<button name="undo" value="{{ e.id }}" class="btn btn-sm btn-light"><i class="fas fa-undo"></i>Reverse</button>
+            </form>{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-level-up-alt"></i>No promotions recorded yet.</div>
+  {% endif %}
+</div>
+{% endblock %}

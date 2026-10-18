@@ -1,0 +1,61 @@
+{% extends "src/index.html" %}
+{% block title %}Users{% endblock %}
+{% block crumb %}Administration{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Users</h1>
+    <p>Give every staff member their own account so the audit trail and e-signatures identify a person. Once someone has a personal account, deactivate the shared account they used.</p>
+  </div>
+</div>
+
+<form method="POST" class="panel">
+  {% csrf_token %}
+  <div class="panel-header"><h2>Add a staff member</h2><span class="hint">They will choose their own password at first login.</span></div>
+  <div class="panel-body">
+    <div class="form-row">
+      <div class="form-group col-md-3"><label>First name</label><input class="form-control" name="first_name" value="{{ values.first_name }}" required></div>
+      <div class="form-group col-md-3"><label>Last name</label><input class="form-control" name="last_name" value="{{ values.last_name }}" required></div>
+      <div class="form-group col-md-3"><label>Username</label><input class="form-control" name="username" value="{{ values.username }}" required autocomplete="off"></div>
+      <div class="form-group col-md-3"><label>Email <span class="muted">(for password reset)</span></label><input class="form-control" name="email" type="email" value="{{ values.email }}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group col-md-3"><label>Role</label>
+        <select class="custom-select" name="role" required>
+          <option value="">Choose role</option>
+          {% for value, label in roles %}<option value="{{ value }}" {% if values.role == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group col-md-3"><label>Section</label>
+        <select class="custom-select" name="section">
+          <option value="">Not needed for Administrator</option>
+          {% for s in sections %}<option value="{{ s.id }}" {% if values.section == s.id|stringformat:"s" %}selected{% endif %}>{{ s.section_name }}</option>{% endfor %}
+        </select>
+      </div>
+      <div class="form-group col-md-3"><label>Temporary password</label><input class="form-control" name="password" type="password" required autocomplete="new-password"></div>
+    </div>
+  </div>
+  <div class="panel-footer"><button class="btn btn-primary"><i class="fas fa-user-plus"></i>Create account</button></div>
+</form>
+
+<div class="panel">
+  <div class="panel-header"><h2>All accounts</h2><span class="hint">{{ accounts|length }} accounts</span></div>
+  <div class="table-wrap">
+    <table class="table table-app">
+      <thead><tr><th>User</th><th>Role</th><th>Section</th><th>Status</th><th>Last login</th><th></th></tr></thead>
+      <tbody>
+      {% for a in accounts %}
+        <tr {% if not a.is_active %}class="muted"{% endif %}>
+          <td><strong>{{ a.username }}</strong>{% if a.profile.is_legacy_shared %} <span class="badge badge-soft-warning">shared</span>{% endif %}<br><span class="muted" style="font-size: 12.5px">{{ a.get_full_name|default:"—" }}</span></td>
+          <td>{% if a.is_superuser %}Administrator <span class="badge badge-soft-muted">superuser</span>{% else %}{{ a.profile.get_role_display|default:"—" }}{% endif %}</td>
+          <td>{{ a.profile.section|default:"All sections" }}</td>
+          <td>{% if a.is_active %}<span class="badge badge-soft">Active</span>{% else %}<span class="badge badge-soft-muted">Deactivated</span>{% endif %}{% if a.profile.must_change_password %} <span class="badge badge-soft-warning">password change due</span>{% endif %}</td>
+          <td class="text-nowrap">{{ a.last_login|date:"Y-m-d"|default:"never" }}</td>
+          <td class="text-right"><a href="{% url 'user_edit' a.id %}" class="btn btn-sm btn-light"><i class="fas fa-pen"></i>Edit</a></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "src/index.html" %}
+{% block title %}Recycle bin{% endblock %}
+{% block crumb %}Administration{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Recycle bin</h1>
+    <p>Deleted results, assessments and students{% if not sees_all %} in {{ my_section }}{% endif %}. Restoring puts them back exactly as they were; a restore is refused if it would duplicate a record entered since.</p>
+  </div>
+</div>
+<div class="panel">
+  {% if groups %}
+  <div class="table-wrap">
+    <table class="table table-app">
+      <thead><tr><th>Deleted</th><th>By</th><th>What</th><th class="text-num">Records</th><th>Reason</th><th></th></tr></thead>
+      <tbody>
+      {% for g in groups %}
+        <tr>
+          <td class="text-nowrap">{{ g.deleted_at|date:"Y-m-d H:i" }}</td>
+          <td>{{ g.deleted_by.username|default:"—" }}</td>
+          <td><span class="badge badge-soft-muted">{{ g.label|capfirst }}</span> {{ g.what }}</td>
+          <td class="text-num">{{ g.count }}</td>
+          <td>{{ g.reason }}</td>
+          <td class="text-right">
+            <form method="POST" class="d-inline" onsubmit="return confirm('Restore {{ g.count }} {{ g.label }}?');">
+              {% csrf_token %}
+              <input type="hidden" name="kind" value="{{ g.kind }}">
+              <input type="hidden" name="key" value="{{ g.key }}">
+              <button class="btn btn-sm btn-outline-primary"><i class="fas fa-undo"></i>Restore</button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-recycle"></i>The recycle bin is empty.</div>
+  {% endif %}
+</div>
+{% endblock %}

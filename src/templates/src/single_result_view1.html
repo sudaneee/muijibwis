@@ -1,0 +1,22 @@
+{% extends "src/index.html" %}
+{% block title %}Result checker{% endblock %}
+{% block crumb %}Reports{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Check a result</h1>
+    <p>Choose the session and term and enter the student's full registration number.</p>
+  </div>
+</div>
+<form name="form1" method="POST" class="panel" style="max-width: 640px">
+  {% csrf_token %}
+  <div class="panel-body">
+    <div class="form-row">{% include "src/_f_session.html" %}{% include "src/_f_term.html" %}</div>
+    <div class="form-group">
+      <label for="f-reg">Registration number</label>
+      <input type="text" class="form-control" name="student_id" id="f-reg" required autocomplete="off">
+    </div>
+  </div>
+  <div class="panel-footer"><button name="form1" type="submit" class="btn btn-primary"><i class="fas fa-search"></i>Check result</button></div>
+</form>
+{% endblock %}

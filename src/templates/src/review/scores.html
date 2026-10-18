@@ -1,0 +1,75 @@
+{% extends "src/index.html" %}
+{% block title %}Scores · Data review{% endblock %}
+{% block crumb %}Approval &amp; quality{% endblock %}
+{% block content %}
+{% include "src/review/_header.html" with active="scores" %}
+<p class="muted">Allowed: 1st C.A 0–{{ limits.ca1 }}, 2nd C.A 0–{{ limits.ca2 }}, Exams 0–{{ limits.exams }}. Enter the correct scores from the score sheet, or remove a result that should not exist.
+  If a whole class was recorded with a different split (for example the full mark in Exams with no C.A) and the total is 0–100, you can <strong>accept it as recorded</strong>.</p>
+
+{% if batches %}
+<div class="panel">
+  <div class="panel-header"><h2>Batches</h2><span class="hint">Classes with several flagged scores</span></div>
+  <div class="table-wrap">
+    <table class="table table-app table-sm">
+      <thead><tr><th>Class</th><th>Session / term</th><th class="text-num">Flagged</th><th class="text-num">Total 0–100</th><th></th></tr></thead>
+      <tbody>
+      {% for b in batches %}
+        <tr>
+          <td>{{ b.class.name }}</td><td>{{ b.session }} · {{ b.term }}</td>
+          <td class="text-num">{{ b.count }}</td><td class="text-num">{{ b.acceptable }}</td>
+          <td class="text-right">{% if b.acceptable %}
+            <form method="post" class="form-inline justify-content-end" onsubmit="return confirm('Accept {{ b.acceptable }} results in this class as recorded?');">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="accept_batch">
+              <input type="hidden" name="class_id" value="{{ b.class.id }}">
+              <input type="hidden" name="session_id" value="{{ b.session.id }}">
+              <input type="hidden" name="term_id" value="{{ b.term.id }}">
+              <input name="note" class="form-control form-control-sm mr-2 mb-1" placeholder="Reason (e.g. exam marked out of 100)" style="width: 260px">
+              <button class="btn btn-sm btn-outline-primary mb-1">Accept {{ b.acceptable }} as recorded</button>
+            </form>{% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
+<div class="panel">
+  <div class="panel-header"><h2>Flagged results</h2><span class="hint">{{ rows|length }} open</span></div>
+  {% if rows %}
+  <div class="table-scroll">
+    <table class="table table-app table-sm">
+      <thead><tr><th>Student</th><th>Class</th><th>Subject</th><th>Session / term</th><th class="text-center">1st C.A</th><th class="text-center">2nd C.A</th><th class="text-center">Exams</th><th class="text-num">Total</th><th>Note</th><th></th></tr></thead>
+      <tbody>
+      {% for r in rows %}
+        <tr>
+          <td>{{ r.student.student_name }} <span class="muted">#{{ r.student_id }}</span></td>
+          <td>{{ r.student_class.name }}</td>
+          <td>{{ r.subject }}</td>
+          <td class="text-nowrap">{{ r.session }} · {{ r.term }}</td>
+          <td class="text-center"><input form="row{{ r.id }}" name="ca1" value="{{ r.ca1 }}" class="form-control form-control-sm score-input d-inline-block {% if r.ca1 > limits.ca1 or r.ca1 < 0 %}is-invalid{% endif %}"></td>
+          <td class="text-center"><input form="row{{ r.id }}" name="ca2" value="{{ r.ca2 }}" class="form-control form-control-sm score-input d-inline-block {% if r.ca2 > limits.ca2 or r.ca2 < 0 %}is-invalid{% endif %}"></td>
+          <td class="text-center"><input form="row{{ r.id }}" name="exams" value="{{ r.exams }}" class="form-control form-control-sm score-input d-inline-block {% if r.exams > limits.exams or r.exams < 0 %}is-invalid{% endif %}"></td>
+          <td class="text-num">{{ r.total }}</td>
+          <td><input form="row{{ r.id }}" name="note" class="form-control form-control-sm" style="min-width: 130px" placeholder="optional"></td>
+          <td class="text-nowrap">
+            <form id="row{{ r.id }}" method="post">
+              {% csrf_token %}
+              <input type="hidden" name="result_id" value="{{ r.id }}">
+              <button name="action" value="save" class="btn btn-sm btn-primary">Save</button>
+              {% if r.acceptable %}<button name="action" value="accept" class="btn btn-sm btn-light" title="Keep these scores; the total is valid">Accept</button>{% endif %}
+              <button name="action" value="remove" class="btn btn-sm btn-outline-danger btn-icon" title="Remove result" onclick="return confirm('Remove this result? It can be restored from Data Review.');"><i class="fas fa-trash-alt"></i></button>
+            </form>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><i class="fas fa-check-circle text-success"></i>All result scores are within the limits.</div>
+  {% endif %}
+</div>
+{% endblock %}

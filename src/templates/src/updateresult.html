@@ -1,0 +1,47 @@
+{% extends "src/index.html" %}
+{% block title %}Update results{% endblock %}
+{% block crumb %}Results{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Update results</h1>
+    <p>Load a class and subject, correct any scores, and save. Totals and subject positions update automatically.</p>
+  </div>
+  <div class="page-actions"><a href="{% url 'result_excel_update' %}" class="btn btn-light"><i class="fas fa-file-excel"></i>Update with Excel instead</a></div>
+</div>
+
+<form name="form1" method="POST" class="panel">
+  {% csrf_token %}
+  <div class="panel-body">
+    <div class="form-row">
+      {% include "src/_f_session.html" %}{% include "src/_f_term.html" %}{% include "src/_f_class.html" %}{% include "src/_f_subject.html" %}
+    </div>
+  </div>
+  <div class="panel-footer"><button name="form1" type="submit" class="btn btn-primary"><i class="fas fa-search"></i>Load results</button></div>
+</form>
+
+{% if sel and all_results %}
+<form name="form2" method="POST" class="panel">
+  {% csrf_token %}
+  <div class="panel-header"><h2>Scores</h2><span class="hint">{{ all_results|length }} students</span></div>
+  <div class="panel-body pb-0">{% include "src/_selection.html" %}</div>
+  <div class="table-scroll">
+    <table class="table table-app">
+      <thead><tr><th style="width: 48px">#</th><th>Student</th><th class="text-center">1st C.A <span class="muted">/20</span></th><th class="text-center">2nd C.A <span class="muted">/20</span></th><th class="text-center">Exams <span class="muted">/60</span></th></tr></thead>
+      <tbody>
+      {% for i in all_results %}
+        <tr>
+          <td class="muted">{{ forloop.counter }}</td>
+          <td><input type="hidden" name="result_id" value="{{ i.id }}"><input type="hidden" name="name" value="{{ i.student }}">{{ i.student }}</td>
+          <td class="text-center"><input type="number" class="form-control form-control-sm score-input d-inline-block" value="{{ i.ca1 }}" name="ca1"></td>
+          <td class="text-center"><input type="number" class="form-control form-control-sm score-input d-inline-block" value="{{ i.ca2 }}" name="ca2"></td>
+          <td class="text-center"><input type="number" class="form-control form-control-sm score-input d-inline-block" value="{{ i.exams }}" name="exams"></td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="panel-footer"><button name="form2" type="submit" class="btn btn-primary"><i class="fas fa-save"></i>Save changes</button></div>
+</form>
+{% endif %}
+{% endblock %}

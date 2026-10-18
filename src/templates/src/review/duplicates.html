@@ -1,0 +1,77 @@
+{% extends "src/index.html" %}
+{% block title %}Duplicates · Data review{% endblock %}
+{% block crumb %}Approval &amp; quality{% endblock %}
+{% block content %}
+{% include "src/review/_header.html" with active="duplicates" %}
+
+<div class="d-flex justify-content-between align-items-end flex-wrap mb-3" style="gap: 12px">
+  <div><h2 class="h5 mb-1">Duplicate results</h2>
+    <p class="muted mb-0">One student, subject and term filed more than once. Keep the right copy; the others go and can be restored. <span class="badge badge-soft">Green</span> marks the class holding most of the student's results that term.</p></div>
+  {% if result_groups %}
+  <form method="post" class="form-inline" onsubmit="return confirm('Keep the suggested copy in every group that has a suggestion?');">
+    {% csrf_token %}<input type="hidden" name="kind" value="result">
+    <div class="custom-control custom-checkbox mr-2"><input type="checkbox" class="custom-control-input" id="ok-r" name="confirm" value="1"><label class="custom-control-label" for="ok-r">I have checked the suggestions</label></div>
+    <button name="apply_suggested" value="1" class="btn btn-sm btn-outline-primary">Keep all suggested copies</button>
+  </form>{% endif %}
+</div>
+
+{% for g in result_groups %}
+<form method="post" class="review-group">
+  {% csrf_token %}
+  <input type="hidden" name="kind" value="result"><input type="hidden" name="key" value="{{ g.key }}">
+  <div class="head"><strong>{{ g.student.student_name }}</strong><span class="muted">ID {{ g.student.id }} · now in {{ g.student.student_class.name|default:"no class" }}</span><span class="badge badge-soft-muted">{{ g.subject }}</span><span class="badge badge-soft-muted">{{ g.session }} {{ g.term }}</span></div>
+  <div class="table-wrap">
+    <table class="table table-app table-sm">
+      <thead><tr><th style="width: 60px">Keep</th><th>Filed under</th><th class="text-num">1st C.A</th><th class="text-num">2nd C.A</th><th class="text-num">Exams</th><th class="text-num">Total</th><th class="text-num">ID</th></tr></thead>
+      <tbody>
+      {% for c in g.copies %}
+        <tr {% if c.id == g.suggested_id %}class="suggested"{% endif %}>
+          <td><input type="radio" name="keep_id" value="{{ c.id }}" {% if c.id == g.suggested_id %}checked{% endif %} required></td>
+          <td>{{ c.student_class.name }} <span class="muted">· {{ c.student_class.section }}</span></td>
+          <td class="text-num">{{ c.ca1 }}</td><td class="text-num">{{ c.ca2 }}</td><td class="text-num">{{ c.exams }}</td><td class="text-num"><strong>{{ c.total }}</strong></td><td class="text-num muted">{{ c.id }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="foot"><input name="note" class="form-control form-control-sm" style="max-width: 340px" placeholder="Note (optional)"><button class="btn btn-sm btn-primary">Keep selected copy</button></div>
+</form>
+{% empty %}
+<div class="panel"><div class="empty-state"><i class="fas fa-check-circle text-success"></i>No duplicate results.</div></div>
+{% endfor %}
+
+<div id="behaviour" class="d-flex justify-content-between align-items-end flex-wrap mb-3 mt-5" style="gap: 12px">
+  <div><h2 class="h5 mb-1">Duplicate behavioural assessments</h2><p class="muted mb-0">One student and term assessed more than once.</p></div>
+  {% if behaviour_groups %}
+  <form method="post" class="form-inline" onsubmit="return confirm('Keep the suggested copy in every group that has a suggestion?');">
+    {% csrf_token %}<input type="hidden" name="kind" value="behaviour">
+    <div class="custom-control custom-checkbox mr-2"><input type="checkbox" class="custom-control-input" id="ok-b" name="confirm" value="1"><label class="custom-control-label" for="ok-b">I have checked the suggestions</label></div>
+    <button name="apply_suggested" value="1" class="btn btn-sm btn-outline-primary">Keep all suggested copies</button>
+  </form>{% endif %}
+</div>
+{% for g in behaviour_groups %}
+<form method="post" class="review-group">
+  {% csrf_token %}
+  <input type="hidden" name="kind" value="behaviour"><input type="hidden" name="key" value="{{ g.key }}">
+  <div class="head"><strong>{{ g.student.student_name }}</strong><span class="muted">ID {{ g.student.id }}</span><span class="badge badge-soft-muted">{{ g.session }} {{ g.term }}</span></div>
+  <div class="table-wrap">
+    <table class="table table-app table-sm">
+      <thead><tr><th style="width: 60px">Keep</th><th>Filed under</th><th class="text-num">Cond.</th><th class="text-num">Punc.</th><th class="text-num">Ded.</th><th class="text-num">Part.</th><th class="text-num">Hosp.</th><th class="text-num">Neat.</th><th class="text-num">Creat.</th><th class="text-num">Phys.</th></tr></thead>
+      <tbody>
+      {% for c in g.copies %}
+        <tr {% if c.id == g.suggested_id %}class="suggested"{% endif %}>
+          <td><input type="radio" name="keep_id" value="{{ c.id }}" {% if c.id == g.suggested_id %}checked{% endif %} required></td>
+          <td>{{ c.student_class.name }} <span class="muted">· {{ c.student_class.section }}</span></td>
+          <td class="text-num">{{ c.conduct }}</td><td class="text-num">{{ c.punctuality }}</td><td class="text-num">{{ c.dedication }}</td><td class="text-num">{{ c.participation }}</td>
+          <td class="text-num">{{ c.hospitality }}</td><td class="text-num">{{ c.neatness }}</td><td class="text-num">{{ c.creativity }}</td><td class="text-num">{{ c.physical }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="foot"><input name="note" class="form-control form-control-sm" style="max-width: 340px" placeholder="Note (optional)"><button class="btn btn-sm btn-primary">Keep selected copy</button></div>
+</form>
+{% empty %}
+<div class="panel"><div class="empty-state"><i class="fas fa-check-circle text-success"></i>No duplicate assessments.</div></div>
+{% endfor %}
+{% endblock %}

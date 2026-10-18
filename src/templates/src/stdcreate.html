@@ -1,0 +1,47 @@
+{% extends 'src/index.html' %}
+{% block title %}Add students{% endblock %}
+{% block crumb %}Students &amp; sheets{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1>Add students from Excel</h1>
+    <p>Add a whole class at once. Old sheets with names in column B still work.</p>
+  </div>
+  <div class="page-actions">
+    <form method="post" class="d-inline">{% csrf_token %}<button name="action" value="template" class="btn btn-light"><i class="fas fa-file-download"></i>Download template</button></form>
+  </div>
+</div>
+
+<form method="post" enctype="multipart/form-data" class="panel">
+  {% csrf_token %}
+  <div class="panel-body">
+    <ol class="steps"><li><span class="n">1</span>Download the template</li><li><span class="n">2</span>One student per row: name, gender, category</li><li><span class="n">3</span>Upload, check the preview, confirm</li></ol>
+    <div class="form-row" style="max-width: 520px">{% include "src/_f_class.html" %}</div>
+    {% include "src/_f_file.html" %}
+  </div>
+  <div class="panel-footer"><button name="action" value="preview" class="btn btn-primary"><i class="fas fa-eye"></i>Upload and preview</button></div>
+</form>
+
+{% if preview %}
+<form method="post" class="panel">
+  {% csrf_token %}
+  <input type="hidden" name="token" value="{{ token }}">
+  <div class="panel-header"><h2>Preview · {{ student_class.name }}</h2><span class="hint">Untick anyone who should not be added. Names already in the class or repeated in the sheet are unticked.</span></div>
+  <div class="table-scroll">
+    <table class="table table-app table-sm">
+      <thead><tr><th style="width: 60px">Add</th><th>Row</th><th>Name</th><th>Gender</th><th>Category</th><th>Check</th></tr></thead>
+      <tbody>
+      {% for r in preview %}
+        <tr {% if r.warnings %}class="table-warning"{% endif %}>
+          <td><input type="checkbox" name="include" value="{{ forloop.counter0 }}" {% if r.include %}checked{% endif %}></td>
+          <td class="muted">{{ r.label }}</td><td>{{ r.name }}</td><td>{{ r.gender|default:"—" }}</td><td>{{ r.category }}</td>
+          <td>{% for w in r.warnings %}<span class="badge badge-soft-warning">{{ w }}</span> {% endfor %}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="panel-footer"><button name="action" value="confirm" class="btn btn-success"><i class="fas fa-check"></i>Add ticked students</button></div>
+</form>
+{% endif %}
+{% endblock content %}

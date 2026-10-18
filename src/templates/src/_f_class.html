@@ -1,0 +1,10 @@
+<div class="form-group col-md">
+  <label for="f-class">Class</label>
+  <select class="custom-select" name="class" id="f-class" required>
+    <option value="">Choose class</option>
+    {% for i in classes %}<option value="{{ i.id }}" {% if sel.class.id == i.id %}selected{% endif %}>{{ i.class_name }}</option>{% endfor %}
+    {% if archived and archived_classes %}<optgroup label="Archived classes">
+    {% for i in archived_classes %}<option value="{{ i.id }}" {% if sel.class.id == i.id %}selected{% endif %}>{{ i.class_name }}</option>{% endfor %}
+    </optgroup>{% endif %}
+  </select>
+</div>
