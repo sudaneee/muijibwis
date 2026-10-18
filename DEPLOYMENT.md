@@ -1,4 +1,57 @@
-# Deploying the upgrade to PythonAnywhere
+# Deployment
+
+## Production: muijibwis.grandiqtech.com (VPS, deployed 2026-10-18)
+
+The server hosts many other sites; everything for this one is isolated:
+
+| What | Where |
+|---|---|
+| Code (git clone of this repo) | `/var/www/muijibwis/app` |
+| Python environment | `/var/www/muijibwis/venv` |
+| Settings / secrets (not in git) | `/var/www/muijibwis/.env` (root:www-data, 640) |
+| SQLite database | `/var/www/muijibwis/data/db.sqlite3` |
+| Uploaded media | `/var/www/muijibwis/media` |
+| Collected static files | `/var/www/muijibwis/staticfiles` |
+| Backups (daily 01:30, 30 kept) | `/var/www/muijibwis/backups`, via `/var/www/muijibwis/backup.sh` and `/etc/cron.d/muijibwis` |
+| Service (2 gunicorn workers, user www-data) | `muijibwis.service`, socket `/run/muijibwis/gunicorn.sock` |
+| nginx site (this domain only) | `/etc/nginx/sites-available/muijibwis.grandiqtech.com` |
+| Certificate | Let's Encrypt via certbot (auto-renewed by `certbot.timer`); Cloudflare sits in front |
+
+### Updating the code
+
+```bash
+cd /var/www/muijibwis
+sudo -u www-data ./backup.sh --label pre-update
+git -C app pull
+venv/bin/pip install -r app/requirements.txt
+cd app && set -a && . ../.env && set +a
+sudo -u www-data -E ../venv/bin/python manage.py migrate
+../venv/bin/python manage.py collectstatic --noinput
+systemctl restart muijibwis
+```
+
+Never `systemctl restart nginx` (other sites); use `nginx -t && systemctl reload nginx`.
+
+### Restoring a backup
+
+```bash
+systemctl stop muijibwis
+gunzip -c /var/www/muijibwis/backups/db-<timestamp>.sqlite3.gz > /var/www/muijibwis/data/db.sqlite3
+chown www-data:www-data /var/www/muijibwis/data/db.sqlite3
+systemctl start muijibwis
+```
+
+### Initial data
+
+Loaded from the school's database (2,820 students, 97,011 results, 10,622
+assessments, identical to the source). All previous user accounts were removed
+and a single `superadmin` created, who creates staff accounts on the Users page.
+The old user list and admin-panel history were archived off-repo
+(`user_history_archive_2026-10-18.xlsx`).
+
+---
+
+# Deploying the upgrade to PythonAnywhere (original plan)
 
 The live database (`db.sqlite3`) is the school's only copy of its records.
 Every step below either leaves it untouched or is preceded by a verified backup.
